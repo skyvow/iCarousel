@@ -76,8 +76,8 @@
 	ICarousel.prototype = {
 		init: function() {
 			var me = this;
-			me.left     = me.element.find('.left');
-			me.right    = me.element.find('.right');
+			me.left     = me.settings.left === '' ? me.element.find('.left') : $(me.settings.left);
+			me.right    = me.settings.right === '' ? me.element.find('.right') : $(me.settings.right);
 			me.item     = me.element.find('.item');
 			me.len      = me.itemLength();
 			me.index    = 0;
@@ -210,8 +210,8 @@
 							resetTimer(); 
 							break;
 					}
-					
-					restartTimer();
+
+					if (me.settings.autoplay) restartTimer();
 				});
 			}
 
@@ -232,7 +232,7 @@
 						if (moveX < -50) me.left.trigger('click');
 						if (moveX > 50) me.right.trigger('click');
 
-						restartTimer();
+						if (me.settings.autoplay) restartTimer();
 					}
 				});
 			}
@@ -244,7 +244,7 @@
 					if (delta<0) me.right.trigger('click');
 					if (delta>0) me.left.trigger('click');
 
-					restartTimer();
+					if (me.settings.autoplay) restartTimer();
 				});
 			}
 
@@ -269,6 +269,8 @@
 	$.fn.iCarousel.defaults = {
 		speed: 3000,
 		autoplay: true,
+		left: '',
+		right: '',
 		dots: true,
 		keys: false,
 		swipe: false,
