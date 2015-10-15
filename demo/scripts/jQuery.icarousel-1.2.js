@@ -177,7 +177,9 @@
 				resetTimer();
 				me.interval = setInterval(function(){ 
 					me._next();
-					me._progressbar();
+					if (me.settings.progressbar) {
+						me._progressbar();
+					}
 				}, me.settings.speed);
 			}
 
@@ -187,7 +189,9 @@
 					me.sliding = false;
 					resetTimer();
 					me._prev();
-					me._progressbar();
+					if (me.settings.progressbar) {
+						me._progressbar();
+					}
 				}
 			});
 
@@ -197,7 +201,9 @@
 					me.sliding = false;
 					resetTimer();
 					me._next();
-					me._progressbar();
+					if (me.settings.progressbar) {
+						me._progressbar();
+					}
 				}
 			});
 
@@ -220,7 +226,9 @@
 					me.index = slideTo;
 
 					me._scrollPage($next, pageClass);
-					me._progressbar();
+					if (me.settings.progressbar) {
+						me._progressbar();
+					}
 				});
 				
 			}
