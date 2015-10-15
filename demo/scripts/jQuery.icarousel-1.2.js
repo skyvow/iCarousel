@@ -35,6 +35,15 @@
  *   display: block;
  *   width: 100%;
  * }
+ * .jq-carousel .progressBar {
+ *	 background-color:rgb(253,193,11);
+ *	 box-shadow:0 0 10px rgba(253,193,11,17);
+ *	 bottom:0;
+ *	 height:1px;
+ *	 left:0;
+ *	 position:absolute;
+ *	 width:0;
+ * }
  * /
 
 /**
@@ -58,6 +67,7 @@
  *		keys: false,
  *		swipe: false,
  *		wheel: false,
+ *		progressbar: false,
  *		easing: 'swing',
  *		duration: 600,
  *		callback: ''
@@ -88,12 +98,24 @@
 				me._initPaging();
 			}
 
+			if (me.settings.progressbar) {
+				$('<div class="progressBar"></div>').appendTo(me.element);
+				me.progressbar = me.element.find('.progressBar');
+				me._progressbar();
+			}
+
 			me.item.eq(0).addClass('active').siblings().removeClass('active');
 
 			me._initEvent();
 		},
 		itemLength: function() {
 			return this.item.length;
+		},
+		_progressbar: function() {
+			var me = this;
+			me.progressbar.stop(true, true).animate({'width': '100%'}, me.settings.speed, function(){
+				$(this).css('width', 0);
+			});
 		},
 		_initPaging: function() {
 			var me = this;
@@ -124,9 +146,11 @@
 		_scrollPage: function(page, pageClass) {
 			var me = this;
 			var sign = pageClass === 'left' ? '-' : '+';
+			
 			page.addClass(pageClass).animate({'left': 0}, me.settings.duration, me.settings.easing, function(){
 				me.sliding = true;
 				$(this).removeClass(pageClass).removeAttr('style').addClass('active');
+
 				if (me.settings.callback && $.type(me.settings.callback) === 'function') {
 					me.settings.callback();
 				}
@@ -153,6 +177,7 @@
 				resetTimer();
 				me.interval = setInterval(function(){ 
 					me._next();
+					me._progressbar();
 				}, me.settings.speed);
 			}
 
@@ -162,6 +187,7 @@
 					me.sliding = false;
 					resetTimer();
 					me._prev();
+					me._progressbar();
 				}
 			});
 
@@ -171,6 +197,7 @@
 					me.sliding = false;
 					resetTimer();
 					me._next();
+					me._progressbar();
 				}
 			});
 
@@ -193,6 +220,7 @@
 					me.index = slideTo;
 
 					me._scrollPage($next, pageClass);
+					me._progressbar();
 				});
 				
 			}
@@ -275,6 +303,7 @@
 		keys: false,
 		swipe: false,
 		wheel: false,
+		progressbar: false,
 		easing: 'swing',
 		duration: 600,
 		callback: ''
