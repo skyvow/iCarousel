@@ -70,31 +70,42 @@
 		this.settings = $.extend({}, $.fn.iCarousel.defaults, options);
 		this.element = element;
 
+		//初始化函数
 		this.init();
 	}
 
 	ICarousel.prototype = {
 		init: function() {
-			var me = this;
-			me.left     = me.settings.left === '' ? me.element.find('.left') : $(me.settings.left);
-			me.right    = me.settings.right === '' ? me.element.find('.right') : $(me.settings.right);
-			me.item     = me.element.find('.item');
-			me.len      = me.itemLength();
-			me.index    = 0;
-			me.interval = null;
-			me.sliding  = true;
+			var me = this; 
+			me.left     = me.settings.left === '' ? me.element.find('.left') : $(me.settings.left); //默认left方向按钮
+			me.right    = me.settings.right === '' ? me.element.find('.right') : $(me.settings.right); //默认right方向按钮
+			me.item     = me.element.find('.item'); //设置元素
+			me.len      = me.itemLength(); //设置元素长度
+			me.index    = 0; //缓存计时器
+			me.interval = null; //缓存计时标识
+			me.sliding  = true; //缓存自定义锁，防止多次操作 例如：轮播还未结束，再次点击造成BUG。
 
+			//如果启用dots，则执行_initPaging函数
 			if (me.settings.dots) {
 				me._initPaging();
 			}
 
+			//如果启用插件，默认显示第一个元素
 			me.item.eq(0).addClass('active').siblings().removeClass('active');
 
+			//如果callback为true，调用apply方法传入当前元素索引值，并执行回调
+			if (me.settings.callback && $.type(me.settings.callback) === 'function') {
+				me.settings.callback.apply(me, [me.index]);
+			}
+
+			//调用主体事件函数
 			me._initEvent();
 		},
+		/* 获取元素长度 */
 		itemLength: function() {
 			return this.item.length;
 		},
+		/* 动态生成dots */
 		_initPaging: function() {
 			var me = this;
 			var indicators = $('<ol class="carousel-indicators"></ol>');
@@ -105,6 +116,7 @@
 			me.indicator = me.element.find('.indicator');
 			me.indicator.eq(0).addClass('active').siblings().removeClass('active');
 		},
+		/* 下一页轮播函数 */
 		_next: function() {
 			var me = this;
 			$active = me.item.eq(me.index);
@@ -113,6 +125,7 @@
 
 			me._scrollPage($next, 'left');
 		},
+		/* 上一页轮播函数 */
 		_prev: function() {
 			var me = this;
 			$active = me.item.eq(me.index);
@@ -121,6 +134,7 @@
 
 			me._scrollPage($prev, 'right');
 		},
+		/* 元素轮播事件 */
 		_scrollPage: function(page, pageClass) {
 			var me = this;
 			var sign = pageClass === 'left' ? '-' : '+';
@@ -128,7 +142,7 @@
 				me.sliding = true;
 				$(this).removeClass(pageClass).removeAttr('style').addClass('active');
 				if (me.settings.callback && $.type(me.settings.callback) === 'function') {
-					me.settings.callback();
+					me.settings.callback.apply(me, [me.index]);
 				}
 			});
 			$active.animate({'left': sign + '100%'}, me.settings.duration, me.settings.easing, function(){
@@ -139,9 +153,11 @@
 				me.indicator.eq(me.index).addClass('active').siblings().removeClass('active');
 			}
 		},
+		/* 元素主体事件函数 */
 		_initEvent: function() {
 			var me = this;
 
+			/* 清除计时器标识 */
 			function resetTimer() {
 				if (me.interval) {
 					clearInterval(me.interval);
@@ -149,6 +165,7 @@
 				}
 			}
 
+			/* 设置计时器标识 */
 			function restartTimer() {
 				resetTimer();
 				me.interval = setInterval(function(){ 
@@ -156,6 +173,7 @@
 				}, me.settings.speed);
 			}
 
+			/* 向前轮播事件 */
 			me.left.on('click', function(){
 				if(me.item.is(":animated")) return false;
 				if (me.sliding) {
@@ -165,6 +183,7 @@
 				}
 			});
 
+			/* 向后轮播事件 */
 			me.right.on('click', function(){
 				if(me.item.is(":animated")) return false;
 				if (me.sliding) {
@@ -174,6 +193,7 @@
 				}
 			});
 
+			/* 如果autoplay为true，则启用自动轮播事件 */
 			if (me.settings.autoplay) {
 				me.element.on({
 					'mouseenter': resetTimer,
@@ -181,6 +201,7 @@
 				}).trigger('mouseleave');
 			}
 
+			/* 如果dots为true，则启用dots点击轮播事件 */
 			if (me.settings.dots) { 
 				me.indicator.on('click', function(){
 					var slideTo = $(this).data('slide-to');
@@ -197,6 +218,7 @@
 				
 			}
 
+			/* 如果keys为true，则启用keys点击轮播事件 （上下左右方向键） */
 			if (me.settings.keys) {
 				$(document).keydown(function(e) {
 					switch(e.which) {
@@ -215,6 +237,7 @@
 				});
 			}
 
+			/* 如果swipe为true，则启用swipe滑动轮播事件 （左右方向） */
 			if (me.settings.swipe) {
 				var startX, moveX, endX;
 				me.element.on({
@@ -237,6 +260,7 @@
 				});
 			}
 
+			/* 如果wheel为true，则启用wheel鼠标滚轮轮播事件 （上下方向） */
 			if (me.settings.wheel) {
 				me.element.on('mousewheel DOMMouseScroll', function(event){
 					event.preventDefault();
@@ -251,7 +275,7 @@
 		} 
 	};
 
-
+	/* 缓存实例对象 */
 	$.fn.iCarousel = function(options) {
 		return this.each(function(){
 			var me = $(this),
@@ -266,6 +290,7 @@
 		});
 	};
 
+	/* 设置可选参数 */
 	$.fn.iCarousel.defaults = {
 		speed: 3000,
 		autoplay: true,

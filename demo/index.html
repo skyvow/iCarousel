@@ -49,16 +49,47 @@
     display: block;
     width: 100%;
   }
+  .jq-carousel .item .txt{
+    position: absolute;
+    bottom:26%;
+    font-size:17px;
+    left:15%;
+    width:70%;
+    color: #fff;
+    text-align: center;
+    opacity:0;
+    -webkit-transform:translateX(-15%);
+    transform:translateX(-15%);
+    -webkit-transition:transform .4s, opacity .4s;
+    transition:transform .4s, opacity .4s;
+  }
+  .jq-carousel .item.now .txt {
+    -webkit-transform:translateX(0);
+    transform:translateX(0);
+    opacity:1;
+  }
   </style>
 
 </head>
 <body>
 
 <div class="jq-carousel">
-  <div class="item"><img src="images/1.jpg" alt=""></div>
-  <div class="item"><img src="images/2.jpg" alt=""></div>
-  <div class="item"><img src="images/3.jpg" alt=""></div>
-  <div class="item"><img src="images/4.jpg" alt=""></div>
+  <div class="item">
+    <div class="txt">Tell us what you need, and we will do our best to whip up an array of delicious delights to make your event a successful one</div>
+    <img src="images/1.jpg" alt="">
+  </div>
+  <div class="item">
+    <div class="txt">Tell us what you need, and we will do our best to whip up an array of delicious delights to make your event a successful one</div>
+    <img src="images/2.jpg" alt="">
+  </div>
+  <div class="item">
+    <div class="txt">Tell us what you need, and we will do our best to whip up an array of delicious delights to make your event a successful one</div>
+    <img src="images/3.jpg" alt="">
+  </div>
+  <div class="item">
+    <div class="txt">Tell us what you need, and we will do our best to whip up an array of delicious delights to make your event a successful one</div>
+    <img src="images/4.jpg" alt="">
+  </div>
   <a class="left carousel-control"><span class="glyphicon glyphicon-chevron-left"></span></a>
   <a class="right carousel-control"><span class="glyphicon glyphicon-chevron-right"></span></a>
 </div>
@@ -67,6 +98,7 @@
 
 
 <script>
+
 
 $('.jq-carousel').iCarousel({
   speed: 3000,
@@ -77,10 +109,13 @@ $('.jq-carousel').iCarousel({
   wheel: true,
   easing: 'swing',
   duration : 600,
-  callback: function() {
-  console.log('111111111callback')
-}
+  callback: function sss(x) {
+    $(".item").eq(x).addClass('now').siblings().removeClass('now');
+    console.log('当前元素索引值',x)
+  }
 });
+
+
 </script>
 </body>
 </html>
