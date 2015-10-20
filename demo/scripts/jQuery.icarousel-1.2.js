@@ -86,17 +86,13 @@
 			me.sliding  = true; //缓存自定义锁，防止多次操作 例如：轮播还未结束，再次点击造成BUG。
 
 			//如果启用dots，则执行_initPaging函数
-			if (me.settings.dots) {
-				me._initPaging();
-			}
+			me.settings.dots && me._initPaging();
 
 			//如果启用插件，默认显示第一个元素
 			me.item.eq(0).addClass('active').siblings().removeClass('active');
 
 			//如果callback为true，调用apply方法传入当前元素索引值，并执行一次回调
-			if (me.settings.callback && $.type(me.settings.callback) === 'function') {
-				me.settings.callback.apply(me, [me.index]);
-			}
+			(me.settings.callback && $.type(me.settings.callback) === 'function') && me.settings.callback.apply(me, [me.index]);
 
 			//调用主体事件函数
 			me._initEvent();
@@ -148,18 +144,14 @@
 			page.addClass(pageClass).animate({'left': 0}, me.settings.duration, me.settings.easing, function(){
 				me.sliding = true; //解锁
 				$(this).removeClass(pageClass).removeAttr('style').addClass('active');
-				if (me.settings.callback && $.type(me.settings.callback) === 'function') {
-					me.settings.callback.apply(me, [me.index]);
-				}
+				(me.settings.callback && $.type(me.settings.callback) === 'function') && me.settings.callback.apply(me, [me.index]);
 			});
 			$active.animate({'left': sign + '100%'}, me.settings.duration, me.settings.easing, function(){
 				$(this).removeClass('active').removeAttr('style');
 			});
 
 			//如果dots为true，调用_onDots方法
-			if (me.settings.dots) {
-				me._onDots(me.index);
-			}
+			me.settings.dots && me._onDots(me.index);
 		},
 		/* 元素主体事件函数 */
 		_initEvent: function() {
@@ -181,25 +173,31 @@
 				}, me.settings.speed);
 			}
 
-			/* 向前轮播事件 */
-			me.left.on('click', function(){
+			/* 向前轮播函数 */
+			function prev() {
 				if(me.item.is(":animated")) return false;
 				if (me.sliding) {
 					me.sliding = false; //上锁
 					resetTimer();      //清楚计时器标识
 					me._prev();
 				}
-			});
+			}
 
-			/* 向后轮播事件 */
-			me.right.on('click', function(){
+			/* 向后轮播函数 */
+			function next() {
 				if(me.item.is(":animated")) return false;
 				if (me.sliding) {
 					me.sliding = false; //上锁
 					resetTimer();      //清楚计时器标识
 					me._next();
 				}
-			});
+			}
+
+			/* 注册向前轮播点击事件 */
+			me.left.on('click', prev);
+
+			/* 注册向后轮播点击事件 */
+			me.right.on('click', next);
 
 			/* 如果autoplay为true，则启用自动轮播事件 */
 			if (me.settings.autoplay) {
@@ -228,13 +226,13 @@
 
 			/* 如果keys为true，则启用keys点击轮播事件 （左右方向键） */
 			if (me.settings.keys) {
-				$(document).keydown(function(e) {
-					switch(e.which) {
+				$(document).keydown(function(event) {
+					switch(event.which) {
 						case 37:
-							me.left.trigger('click'); 
+							prev(); 
 							break;
 						case 39:
-							me.right.trigger('click'); 
+							next(); 
 							break;
 						case 27:
 							resetTimer(); 
@@ -242,7 +240,7 @@
 					}
 
 					/* 如果autoplay为true，则启用自动轮播事件 */
-					if (me.settings.autoplay) restartTimer();
+					me.settings.autoplay && restartTimer();
 				});
 			}
 
@@ -261,11 +259,11 @@
 						endX = event.originalEvent.changedTouches[0].clientX;
 						moveX = startX - endX;
 
-						if (moveX < -50) me.left.trigger('click');
-						if (moveX > 50) me.right.trigger('click');
+						(moveX < -80) && prev();
+						(moveX > 80) && next();
 
 						/* 如果autoplay为true，则启用自动轮播事件 */
-						if (me.settings.autoplay) restartTimer();
+						me.settings.autoplay && restartTimer();
 					}
 				});
 			}
@@ -275,11 +273,11 @@
 				me.element.on('mousewheel DOMMouseScroll', function(event){
 					event.preventDefault();
 					var delta = event.originalEvent.wheelDelta || -event.originalEvent.detail;
-					if (delta<0) me.right.trigger('click');
-					if (delta>0) me.left.trigger('click');
+					(delta<0) && next();
+					(delta>0) && prev();
 
 					/* 如果autoplay为true，则启用自动轮播事件 */
-					if (me.settings.autoplay) restartTimer();
+					me.settings.autoplay && restartTimer();
 				});
 			}
 
@@ -303,17 +301,17 @@
 
 	/* 设置可选参数 */
 	$.fn.iCarousel.defaults = {
-		speed: 3000,
-		autoplay: true,
-		left: '',
-		right: '',
-		dots: true,
-		keys: false,
-		swipe: false,
-		wheel: false,
-		easing: 'swing',
-		duration: 600,
-		callback: ''
+		speed: 3000,       //自动轮播速度
+		autoplay: true,    //是否启用自动轮播
+		left: '',          //左按钮
+		right: '',         //右按钮
+		dots: true,        //是否启用标识
+		keys: false,       //是否启用键盘
+		swipe: false,      //是否启用手势
+		wheel: false,      //是否启用鼠标滚轮
+		easing: 'swing',   //动画曲线，可选用jquery.easing.min.js类库
+		duration: 600,     //动画延迟
+		callback: ''       //动画执行完毕后的回调函数
 	};
 
 })(jQuery);
