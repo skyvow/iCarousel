@@ -76,7 +76,7 @@
 
 	ICarousel.prototype = {
 		init: function() {
-			var me = this; 
+			var me = this; //缓存当前this对象
 			me.left     = me.settings.left === '' ? me.element.find('.left') : $(me.settings.left); //默认left方向按钮
 			me.right    = me.settings.right === '' ? me.element.find('.right') : $(me.settings.right); //默认right方向按钮
 			me.item     = me.element.find('.item'); //设置元素
@@ -93,7 +93,7 @@
 			//如果启用插件，默认显示第一个元素
 			me.item.eq(0).addClass('active').siblings().removeClass('active');
 
-			//如果callback为true，调用apply方法传入当前元素索引值，并执行回调
+			//如果callback为true，调用apply方法传入当前元素索引值，并执行一次回调
 			if (me.settings.callback && $.type(me.settings.callback) === 'function') {
 				me.settings.callback.apply(me, [me.index]);
 			}
@@ -114,7 +114,14 @@
 			}
 			indicators.appendTo(me.element);
 			me.indicator = me.element.find('.indicator');
-			me.indicator.eq(0).addClass('active').siblings().removeClass('active');
+
+			//默认激活第一个dots
+			me._onDots(0);
+		},
+		/* 点击dots轮播函数 */
+		_onDots: function(index) {
+			var me = this;
+			me.indicator.eq(index).addClass('active').siblings().removeClass('active');
 		},
 		/* 下一页轮播函数 */
 		_next: function() {
@@ -139,7 +146,7 @@
 			var me = this;
 			var sign = pageClass === 'left' ? '-' : '+';
 			page.addClass(pageClass).animate({'left': 0}, me.settings.duration, me.settings.easing, function(){
-				me.sliding = true;
+				me.sliding = true; //解锁
 				$(this).removeClass(pageClass).removeAttr('style').addClass('active');
 				if (me.settings.callback && $.type(me.settings.callback) === 'function') {
 					me.settings.callback.apply(me, [me.index]);
@@ -149,8 +156,9 @@
 				$(this).removeClass('active').removeAttr('style');
 			});
 
+			//如果dots为true，调用_onDots方法
 			if (me.settings.dots) {
-				me.indicator.eq(me.index).addClass('active').siblings().removeClass('active');
+				me._onDots(me.index);
 			}
 		},
 		/* 元素主体事件函数 */
@@ -177,8 +185,8 @@
 			me.left.on('click', function(){
 				if(me.item.is(":animated")) return false;
 				if (me.sliding) {
-					me.sliding = false;
-					resetTimer();
+					me.sliding = false; //上锁
+					resetTimer();      //清楚计时器标识
 					me._prev();
 				}
 			});
@@ -187,8 +195,8 @@
 			me.right.on('click', function(){
 				if(me.item.is(":animated")) return false;
 				if (me.sliding) {
-					me.sliding = false;
-					resetTimer();
+					me.sliding = false; //上锁
+					resetTimer();      //清楚计时器标识
 					me._next();
 				}
 			});
@@ -205,9 +213,9 @@
 			if (me.settings.dots) { 
 				me.indicator.on('click', function(){
 					var slideTo = $(this).data('slide-to');
-					var pageClass = me.index < slideTo ? 'left' : 'right';
+					var pageClass = me.index < slideTo ? 'left' : 'right'; //点击dots时，判断轮播方向
 
-					if (me.index == slideTo) return false;
+					if (me.index == slideTo) return false; 
 
 					$active = me.item.eq(me.index);
 					$next = me.item.eq(slideTo);
@@ -218,12 +226,12 @@
 				
 			}
 
-			/* 如果keys为true，则启用keys点击轮播事件 （上下左右方向键） */
+			/* 如果keys为true，则启用keys点击轮播事件 （左右方向键） */
 			if (me.settings.keys) {
 				$(document).keydown(function(e) {
 					switch(e.which) {
 						case 37:
-							me.left.trigger('click');
+							me.left.trigger('click'); 
 							break;
 						case 39:
 							me.right.trigger('click'); 
@@ -233,16 +241,17 @@
 							break;
 					}
 
+					/* 如果autoplay为true，则启用自动轮播事件 */
 					if (me.settings.autoplay) restartTimer();
 				});
 			}
 
 			/* 如果swipe为true，则启用swipe滑动轮播事件 （左右方向） */
 			if (me.settings.swipe) {
-				var startX, moveX, endX;
+				var startX, moveX, endX; //触摸起始位置、移动距离、结束位置
 				me.element.on({
 					'touchstart': function(event) {
-						resetTimer();
+						resetTimer(); 
 						startX = event.originalEvent.changedTouches[0].clientX;
 					},
 					'touchmove': function(event) {
@@ -255,6 +264,7 @@
 						if (moveX < -50) me.left.trigger('click');
 						if (moveX > 50) me.right.trigger('click');
 
+						/* 如果autoplay为true，则启用自动轮播事件 */
 						if (me.settings.autoplay) restartTimer();
 					}
 				});
@@ -268,6 +278,7 @@
 					if (delta<0) me.right.trigger('click');
 					if (delta>0) me.left.trigger('click');
 
+					/* 如果autoplay为true，则启用自动轮播事件 */
 					if (me.settings.autoplay) restartTimer();
 				});
 			}
