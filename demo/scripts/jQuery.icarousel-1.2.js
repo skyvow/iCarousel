@@ -77,13 +77,14 @@
 	ICarousel.prototype = {
 		init: function() {
 			var me = this; //缓存当前this对象
-			me.left     = me.settings.left === '' ? me.element.find('.left') : $(me.settings.left); //默认left方向按钮
-			me.right    = me.settings.right === '' ? me.element.find('.right') : $(me.settings.right); //默认right方向按钮
 			me.item     = me.element.find('.item'); //设置元素
 			me.len      = me.itemLength(); //设置元素长度
 			me.index    = 0; //缓存计时器
 			me.interval = null; //缓存计时标识
 			me.sliding  = true; //缓存自定义锁，防止多次操作 例如：轮播还未结束，再次点击造成BUG。
+
+			if (me.settings.left !== '') me.left = $(me.settings.left); //若left不为空，则缓存$(left)
+			if (me.settings.right !== '') me.right = $(me.settings.right); //若right不为空，则缓存$(right)
 
 			//如果启用dots，则执行_initPaging函数
 			me.settings.dots && me._initPaging();
@@ -193,11 +194,11 @@
 				}
 			}
 
-			/* 注册向前轮播点击事件 */
-			me.left.on('click', prev);
+			/* left存在时，注册向前轮播点击事件 */
+			if (me.settings.left !== '') me.left.on('click', prev);
 
-			/* 注册向后轮播点击事件 */
-			me.right.on('click', next);
+			/* right存在时，注册向后轮播点击事件 */
+			if (me.settings.right !== '') me.right.on('click', next);
 
 			/* 如果autoplay为true，则启用自动轮播事件 */
 			if (me.settings.autoplay) {
@@ -303,8 +304,8 @@
 	$.fn.iCarousel.defaults = {
 		speed: 3000,       //自动轮播速度
 		autoplay: true,    //是否启用自动轮播
-		left: '',          //左按钮
-		right: '',         //右按钮
+		left: '',          //左按钮 可设置为'.jq-carousel .left'
+		right: '',         //右按钮 可设置为'.jq-carousel .right'
 		dots: true,        //是否启用标识
 		keys: false,       //是否启用键盘
 		swipe: false,      //是否启用手势
