@@ -17,8 +17,8 @@
 ```
 
 ## DATA
-*data-icarousel、data-icarouse-speed、data-icarouse-swipe、data-icarouse-wheel
-*data-icarousel启动插件及配置其他参数
+* data-icarousel、data-icarouse-speed、data-icarouse-swipe、data-icarouse-wheel
+* data-icarousel启动插件及配置其他参数
 
 
 ```html
