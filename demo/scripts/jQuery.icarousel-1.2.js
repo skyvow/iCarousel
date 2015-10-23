@@ -171,7 +171,7 @@
 				resetTimer();
 				me.interval = setInterval(function(){ 
 					me._next();
-				}, me.settings.speed);
+				}, me.element.data("icarousel-speed") || me.settings.speed);
 			}
 
 			/* 向前轮播函数 */
@@ -246,7 +246,7 @@
 			}
 
 			/* 如果swipe为true，则启用swipe滑动轮播事件 （左右方向） */
-			if (me.settings.swipe) {
+			if (me.element.data("icarousel-swipe") || me.settings.swipe) {
 				var startX, moveX, endX; //触摸起始位置、移动距离、结束位置
 				me.element.on({
 					'touchstart': function(event) {
@@ -270,7 +270,7 @@
 			}
 
 			/* 如果wheel为true，则启用wheel鼠标滚轮轮播事件 （上下方向） */
-			if (me.settings.wheel) {
+			if (me.element.data("icarousel-wheel") || me.settings.wheel) {
 				me.element.on('mousewheel DOMMouseScroll', function(event){
 					event.preventDefault();
 					var delta = event.originalEvent.wheelDelta || -event.originalEvent.detail;
@@ -316,3 +316,7 @@
 	};
 
 })(jQuery);
+
+$(function(){
+	$("[data-icarousel]").iCarousel();
+});
