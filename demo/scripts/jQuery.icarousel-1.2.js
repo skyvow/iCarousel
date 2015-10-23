@@ -246,26 +246,48 @@
 			}
 
 			/* 如果swipe为true，则启用swipe滑动轮播事件 （左右方向） */
+			// if (me.settings.swipe) {
+			// 	var startX, moveX, endX; //触摸起始位置、移动距离、结束位置
+			// 	me.element.on({
+			// 		'touchstart': function(event) {
+			// 			resetTimer(); 
+			// 			startX = event.originalEvent.changedTouches[0].clientX;
+			// 		},
+			// 		'touchmove': function(event) {
+			// 			event.preventDefault();
+			// 		},
+			// 		'touchend': function(event) {
+			// 			endX = event.originalEvent.changedTouches[0].clientX;
+			// 			moveX = startX - endX;
+
+			// 			(moveX < -80) && prev();
+			// 			(moveX > 80) && next();
+
+			// 			/* 如果autoplay为true，则启用自动轮播事件 */
+			// 			me.settings.autoplay && restartTimer();
+			// 		}
+			// 	});
+			// }
+			// 
+			
+			/* 如果swipe为true，则启用swipe滑动轮播事件 （左右方向） */
 			if (me.settings.swipe) {
-				var startX, moveX, endX; //触摸起始位置、移动距离、结束位置
-				me.element.on({
-					'touchstart': function(event) {
-						resetTimer(); 
-						startX = event.originalEvent.changedTouches[0].clientX;
-					},
-					'touchmove': function(event) {
+				me.element.hammer().on('panend', function(event) {
+					var $direction = event.gesture.direction,
+						$distance  = event.gesture.distance;
+
+					if ($direction == 2 && $distance > 80) {
 						event.preventDefault();
-					},
-					'touchend': function(event) {
-						endX = event.originalEvent.changedTouches[0].clientX;
-						moveX = startX - endX;
-
-						(moveX < -80) && prev();
-						(moveX > 80) && next();
-
-						/* 如果autoplay为true，则启用自动轮播事件 */
-						me.settings.autoplay && restartTimer();
+						next();
 					}
+
+					if ($direction == 4 && $distance > 80) {
+						event.preventDefault();
+						prev();
+					}
+
+					/* 如果autoplay为true，则启用自动轮播事件 */
+					me.settings.autoplay && restartTimer();
 				});
 			}
 
