@@ -63,6 +63,56 @@
  *		callback: ''
  *	});
  */
++function ($) {
+  'use strict';
+
+  // CSS TRANSITION SUPPORT (Shoutout: http://www.modernizr.com/)
+  // ============================================================
+
+  function transitionEnd() {
+    var el = document.createElement('bootstrap')
+
+    var transEndEventNames = {
+      WebkitTransition : 'webkitTransitionEnd',
+      MozTransition    : 'transitionend',
+      OTransition      : 'oTransitionEnd otransitionend',
+      transition       : 'transitionend'
+    }
+
+    for (var name in transEndEventNames) {
+      if (el.style[name] !== undefined) {
+        return { end: transEndEventNames[name] }
+      }
+    }
+
+    return false // explicit for ie8 (  ._.)
+  }
+
+  // http://blog.alexmaccaw.com/css-transitions
+  $.fn.emulateTransitionEnd = function (duration) {
+    var called = false
+    var $el = this
+    $(this).one('bsTransitionEnd', function () { called = true })
+    var callback = function () { if (!called) $($el).trigger($.support.transition.end) }
+    setTimeout(callback, duration)
+    return this
+  }
+
+  $(function () {
+    $.support.transition = transitionEnd()
+
+    if (!$.support.transition) return
+
+    $.event.special.bsTransitionEnd = {
+      bindType: $.support.transition.end,
+      delegateType: $.support.transition.end,
+      handle: function (e) {
+        if ($(e.target).is(this)) return e.handleObj.handler.apply(this, arguments)
+      }
+    }
+  })
+
+}(jQuery);
 
 ;(function($){
 
@@ -79,7 +129,6 @@
 			var me = this; //缓存当前this对象
 			me.item     = me.element.find('.item'); //设置元素
 			me.len      = me.itemLength(); //设置元素长度
-			me.index    = 0; //缓存计时器
 			me.interval = null; //缓存计时标识
 			me.sliding  = true; //缓存自定义锁，防止多次操作 例如：轮播还未结束，再次点击造成BUG。
 
@@ -93,7 +142,7 @@
 			me.item.eq(0).addClass('active').siblings().removeClass('active');
 
 			//如果callback为true，调用apply方法传入当前元素索引值，并执行一次回调
-			(me.settings.callback && $.type(me.settings.callback) === 'function') && me.settings.callback.apply(me, [me.index]);
+			(me.settings.callback && $.type(me.settings.callback) === 'function') && me.settings.callback.apply(me, [0, me]);
 
 			//调用主体事件函数
 			me._initEvent();
@@ -122,37 +171,58 @@
 		},
 		/* 下一页轮播函数 */
 		_next: function() {
-			var me = this;
-			$active = me.item.eq(me.index);
-			me.index = me.index === me.len - 1 ? 0 : me.index + 1;
-			$next = me.item.eq(me.index);
-
-			me._scrollPage($next, 'left');
+			return this._scrollPage('next')
 		},
 		/* 上一页轮播函数 */
 		_prev: function() {
-			var me = this;
-			$active = me.item.eq(me.index);
-			me.index = me.index === 0 ? me.len - 1 : me.index - 1;
-			$prev = me.item.eq(me.index);
-
-			me._scrollPage($prev, 'right');
+			return this._scrollPage('prev')
+		},
+		/* 获取元素索引值 */
+		_getItemIndex: function (item) {
+			this.item = item.parent().children('.item')
+			return this.item.index(item)
+		},
+		/* 判断轮播方向，返回下一个元素 */
+		_getItemForDirection: function(direction, active) {
+			var activeIndex = this._getItemIndex(active),
+		    	delta 		= direction == 'prev' ? -1 : 1,
+		    	itemIndex 	= (activeIndex + delta) % this.len;
+		    return this.item.eq(itemIndex);
 		},
 		/* 元素轮播事件 */
-		_scrollPage: function(page, pageClass) {
-			var me = this;
-			var sign = pageClass === 'left' ? '-' : '+';
-			page.addClass(pageClass).animate({'left': 0}, me.settings.duration, me.settings.easing, function(){
-				me.sliding = true; //解锁
-				$(this).removeClass(pageClass).removeAttr('style').addClass('active');
-				(me.settings.callback && $.type(me.settings.callback) === 'function') && me.settings.callback.apply(me, [me.index]);
-			});
-			$active.animate({'left': sign + '100%'}, me.settings.duration, me.settings.easing, function(){
-				$(this).removeClass('active').removeAttr('style');
-			});
+		_scrollPage: function(type, next) {
+			var me 		  = this;
+			var $active   = me.element.find('.item.active');
+			var $next 	  = next || me._getItemForDirection(type, $active);
+			var direction = type == 'next' ? 'left' : 'right';
 
-			//如果dots为true，调用_onDots方法
-			me.settings.dots && me._onDots(me.index);
+			var relatedTarget = $next[0];
+			var slidEvent = $.Event('slid.bs.carousel', { relatedTarget: relatedTarget, direction: direction });
+			var index = me._getItemIndex($next);
+
+			me.settings.dots && me._onDots(index);
+
+			if ($.support.transition) {
+				$next.addClass(type);
+				$next[0].offsetWidth;
+				$next.add($active).addClass(direction);
+
+				$active.one('bsTransitionEnd', function () {
+					me.sliding = true; //解锁
+					$next.removeClass([type, direction].join(' ')).addClass('active');
+					$active.removeClass(['active', direction].join(' '));
+					(me.settings.callback && $.type(me.settings.callback) === 'function') && me.settings.callback.apply(me, [index, me]);
+					setTimeout(function () {
+						me.element.trigger(slidEvent);
+					}, 0);
+				}).emulateTransitionEnd(600);
+			} else {
+				me.sliding = true; //解锁
+				$next.addClass('active');
+				$active.removeClass('active');
+				(me.settings.callback && $.type(me.settings.callback) === 'function') && me.settings.callback.apply(me, [index, me]);
+				me.element.trigger(slidEvent);
+			}
 		},
 		/* 元素主体事件函数 */
 		_initEvent: function() {
@@ -211,16 +281,12 @@
 			/* 如果dots为true，则启用dots点击轮播事件 */
 			if (me.settings.dots) { 
 				me.indicator.on('click', function(){
-					var slideTo = $(this).data('slide-to');
-					var pageClass = me.index < slideTo ? 'left' : 'right'; //点击dots时，判断轮播方向
+					var slideTo 	  = $(this).data('slide-to'), //获取点击dots索引值
+						activeSlideTo = me.element.find('.indicator.active').index(), //获取当前dots索引值
+						direction 	  = slideTo > activeSlideTo ? 'next' : 'prev', //判断轮播方向
+						next          = me.item.eq(slideTo);
 
-					if (me.index == slideTo) return false; 
-
-					$active = me.item.eq(me.index);
-					$next = me.item.eq(slideTo);
-					me.index = slideTo;
-
-					me._scrollPage($next, pageClass);
+					(slideTo !== activeSlideTo) && me._scrollPage(direction, next);
 				});
 				
 			}
@@ -312,7 +378,7 @@
 		wheel: false,      //是否启用鼠标滚轮
 		easing: 'swing',   //动画曲线，可选用jquery.easing.min.js类库
 		duration: 600,     //动画延迟
-		callback: ''       //动画执行完毕后的回调函数，接受第一个参数为当前元素索引值
+		callback: ''       //动画执行完毕后的回调函数，接受第一个参数为当前元素索引值，第二个参数为当前对象
 	};
 
 })(jQuery);

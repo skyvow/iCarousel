@@ -13,81 +13,22 @@
 
   <style>
 
-  .jq-carousel {
-    position: relative;
-    width: 100%;
-    overflow: hidden;
-  }
-  .jq-carousel:before, .jq-carousel:after {
-    content: "";
-    display: table;
-  }
-  .jq-carousel:after {
-    clear: both;
-  }
-  .jq-carousel .item {
-    position: relative;
-    display: none;
-    width: 100%;
-  }
-  .jq-carousel .item.active {
-    display: block;
-  }
-  .jq-carousel .item.left {
-    position: absolute;
-    display: block;
-    top: 0;
-    left: 100%;
-  }
-  .jq-carousel .item.right {
-    position: absolute;
-    display: block;
-    top: 0;
-    left: -100%;
-  }
-  .jq-carousel .item > img {
-    display: block;
-    width: 100%;
-  }
-  .jq-carousel .item .txt{
-    position: absolute;
-    bottom:26%;
-    font-size:17px;
-    left:15%;
-    width:70%;
-    color: #fff;
-    text-align: center;
-    opacity:0;
-    -webkit-transform:translateX(-15%);
-    transform:translateX(-15%);
-    -webkit-transition:transform .4s, opacity .4s;
-    transition:transform .4s, opacity .4s;
-  }
-  .jq-carousel .item.now .txt {
-    -webkit-transform:translateX(0);
-    transform:translateX(0);
-    opacity:1;
-  }
   </style>
 
 </head>
 <body>
 
-<div class="jq-carousel">
+<div class="carousel-inner">
   <div class="item">
-    <div class="txt">Tell us what you need, and we will do our best to whip up an array of delicious delights to make your event a successful one</div>
     <img src="images/1.jpg" alt="">
   </div>
   <div class="item">
-    <div class="txt">Tell us what you need, and we will do our best to whip up an array of delicious delights to make your event a successful one</div>
     <img src="images/2.jpg" alt="">
   </div>
   <div class="item">
-    <div class="txt">Tell us what you need, and we will do our best to whip up an array of delicious delights to make your event a successful one</div>
     <img src="images/3.jpg" alt="">
   </div>
   <div class="item">
-    <div class="txt">Tell us what you need, and we will do our best to whip up an array of delicious delights to make your event a successful one</div>
     <img src="images/4.jpg" alt="">
   </div>
   <a class="left carousel-control"><span class="glyphicon glyphicon-chevron-left"></span></a>
@@ -99,22 +40,23 @@
 
 <script>
 
+function callback (index, element) {
+  console.log('当前元素索引值',index);
+  console.log(element);
+}
 
-$('.jq-carousel').iCarousel({
+$('.carousel-inner').iCarousel({
   speed: 3000,
   autoplay: true,
-  left: '.jq-carousel .left',
-  right: '.jq-carousel .right',
+  left: '.carousel-inner .left',
+  right: '.carousel-inner .right',
   dots: true,
   keys: true,
   swipe: true,
   wheel: true,
   easing: 'swing',
   duration : 600,
-  callback: function sss(x) {
-    $(".item").eq(x).addClass('now').siblings().removeClass('now');
-    console.log('当前元素索引值',x)
-  }
+  callback: callback
 });
 
 
