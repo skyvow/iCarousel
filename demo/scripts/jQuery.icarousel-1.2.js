@@ -1,43 +1,4 @@
 /**
- * .jq-carousel {
- *   position: relative;
- *   width: 100%;
- *   overflow: hidden;
- * }
- * .jq-carousel:before, .jq-carousel:after {
- *   content: "";
- *   display: table;
- * }
- * .jq-carousel:after {
- *   clear: both;
- * }
- * .jq-carousel .item {
- *   position: relative;
- *   display: none;
- *   width: 100%;
- * }
- * .jq-carousel .item.active {
- *   display: block;
- * }
- * .jq-carousel .item.left {
- *   position: absolute;
- *   display: block;
- *   top: 0;
- *   left: 100%;
- * }
- * .jq-carousel .item.right {
- *   position: absolute;
- *   display: block;
- *   top: 0;
- *   left: -100%;
- * }
- * .jq-carousel .item > img {
- *   display: block;
- *   width: 100%;
- * }
- * /
-
-/**
  * <div class="container">
  * 	<div class="jq-carousel">
  * 		<div class="item"><img src="images/1.jpg" alt=""></div>
@@ -58,8 +19,6 @@
  *		keys: false,
  *		swipe: false,
  *		wheel: false,
- *		easing: 'swing',
- *		duration: 600,
  *		callback: ''
  *	});
  */
@@ -114,7 +73,7 @@
 
 }(jQuery);
 
-;(function($){
+!function($){
 
 	function ICarousel(element, options) {
 		this.settings = $.extend({}, $.fn.iCarousel.defaults, options);
@@ -146,6 +105,7 @@
 
 			//调用主体事件函数
 			me._initEvent();
+			return this;
 		},
 		/* 获取元素长度 */
 		itemLength: function() {
@@ -163,11 +123,11 @@
 
 			//默认激活第一个dots
 			me._onDots(0);
+			return this;
 		},
 		/* 点击dots轮播函数 */
 		_onDots: function(index) {
-			var me = this;
-			me.indicator.eq(index).addClass('active').siblings().removeClass('active');
+			return this.indicator.eq(index).addClass('active').siblings().removeClass('active');
 		},
 		/* 下一页轮播函数 */
 		_next: function() {
@@ -223,6 +183,7 @@
 				(me.settings.callback && $.type(me.settings.callback) === 'function') && me.settings.callback.apply(me, [index, me]);
 				me.element.trigger(slidEvent);
 			}
+			return this;
 		},
 		/* 元素主体事件函数 */
 		_initEvent: function() {
@@ -264,36 +225,30 @@
 				}
 			}
 
-			/* left存在时，注册向前轮播点击事件 */
-			if (me.settings.left !== '') me.left.on('click', prev);
 
-			/* right存在时，注册向后轮播点击事件 */
-			if (me.settings.right !== '') me.right.on('click', next);
-
-			/* 如果autoplay为true，则启用自动轮播事件 */
-			if (me.settings.autoplay) {
-				me.element.on({
-					'mouseenter': resetTimer,
-					'mouseleave': restartTimer
-				}).trigger('mouseleave');
-			}
-
-			/* 如果dots为true，则启用dots点击轮播事件 */
-			if (me.settings.dots) { 
+			/* dots点击轮播事件 */
+			function dots(){
 				me.indicator.on('click', function(){
 					var slideTo 	  = $(this).data('slide-to'), //获取点击dots索引值
 						activeSlideTo = me.element.find('.indicator.active').index(), //获取当前dots索引值
 						direction 	  = slideTo > activeSlideTo ? 'next' : 'prev', //判断轮播方向
 						next          = me.item.eq(slideTo);
+					
+					if(slideTo==activeSlideTo) return false;
 
-					(slideTo !== activeSlideTo) && me._scrollPage(direction, next);
+					if (me.sliding) {
+						me.sliding = false;
+						(slideTo !== activeSlideTo) && me._scrollPage(direction, next);
+					}
 				});
-				
 			}
 
-			/* 如果keys为true，则启用keys点击轮播事件 （左右方向键） */
-			if (me.settings.keys) {
+
+			/* keys点击轮播事件 */
+			function keydownFn() {
 				$(document).keydown(function(event) {
+					if (/input|textarea/i.test(event.target.tagName)) return;
+
 					switch(event.which) {
 						case 37:
 							prev(); 
@@ -311,8 +266,8 @@
 				});
 			}
 
-			/* 如果swipe为true，则启用swipe滑动轮播事件 （左右方向） */
-			if (me.element.data("icarousel-swipe") || me.settings.swipe) {
+			/* swipe滑动轮播事件 */
+			function swipeFn() {
 				var startX, moveX, endX; //触摸起始位置、移动距离、结束位置
 				me.element.on({
 					'touchstart': function(event) {
@@ -335,8 +290,8 @@
 				});
 			}
 
-			/* 如果wheel为true，则启用wheel鼠标滚轮轮播事件 （上下方向） */
-			if (me.element.data("icarousel-wheel") || me.settings.wheel) {
+			/* wheel鼠标滚轮轮播事件 */
+			function wheelFn() {
 				me.element.on('mousewheel DOMMouseScroll', function(event){
 					event.preventDefault();
 					var delta = event.originalEvent.wheelDelta || -event.originalEvent.detail;
@@ -348,6 +303,28 @@
 				});
 			}
 
+			/* left存在时，注册向前轮播点击事件 */
+			(me.settings.left !== '') && me.left.on('click', prev);
+
+			/* right存在时，注册向后轮播点击事件 */
+			(me.settings.right !== '') && me.right.on('click', next);
+
+			/* 如果autoplay为true，则启用自动轮播事件 */
+			me.settings.autoplay && me.element.on({'mouseenter': resetTimer, 'mouseleave': restartTimer}).trigger('mouseleave');
+
+			/* 如果dots为true，则启用dots点击轮播事件 */
+			me.settings.dots && me.indicator.on('click', dots);
+				
+			/* 如果keys为true，则启用keys点击轮播事件 （左右方向键） */
+			me.settings.keys && keydownFn();
+
+			/* 如果swipe为true，则启用swipe滑动轮播事件 （左右方向） */
+			(me.element.data("icarousel-swipe") || me.settings.swipe) && swipeFn();
+
+			/* 如果wheel为true，则启用wheel鼠标滚轮轮播事件 （上下方向） */
+			(me.element.data("icarousel-wheel") || me.settings.wheel) && wheelFn();
+
+			return this;	
 		} 
 	};
 
@@ -376,12 +353,10 @@
 		keys: false,       //是否启用键盘
 		swipe: false,      //是否启用手势
 		wheel: false,      //是否启用鼠标滚轮
-		easing: 'swing',   //动画曲线，可选用jquery.easing.min.js类库
-		duration: 600,     //动画延迟
 		callback: ''       //动画执行完毕后的回调函数，接受第一个参数为当前元素索引值，第二个参数为当前对象
 	};
 
-})(jQuery);
+}(jQuery);
 
 $(function(){
 	$("[data-icarousel]").iCarousel();
