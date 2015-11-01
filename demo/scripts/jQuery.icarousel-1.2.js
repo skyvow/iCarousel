@@ -64,7 +64,7 @@
  *	});
  */
 
-;(function($){
+!function($){
 
 	function ICarousel(element, options) {
 		this.settings = $.extend({}, $.fn.iCarousel.defaults, options);
@@ -79,7 +79,6 @@
 			var me = this; //缓存当前this对象
 			me.item     = me.element.find('.item'); //设置元素
 			me.len      = me.itemLength(); //设置元素长度
-			me.index    = 0; //缓存计时器
 			me.interval = null; //缓存计时标识
 			me.sliding  = true; //缓存自定义锁，防止多次操作 例如：轮播还未结束，再次点击造成BUG。
 
@@ -93,7 +92,7 @@
 			me.item.eq(0).addClass('active').siblings().removeClass('active');
 
 			//如果callback为true，调用apply方法传入当前元素索引值，并执行一次回调
-			(me.settings.callback && $.type(me.settings.callback) === 'function') && me.settings.callback.apply(me, [me.index]);
+			(me.settings.callback && $.type(me.settings.callback) === 'function') && me.settings.callback.apply(me, [0]);
 
 			//调用主体事件函数
 			me._initEvent();
@@ -104,55 +103,64 @@
 		},
 		/* 动态生成dots */
 		_initPaging: function() {
-			var me = this;
+			// var me = this;
 			var indicators = $('<ol class="carousel-indicators"></ol>');
-			for (var i = 0; i < me.len; i++) {
+			for (var i = 0; i < this.len; i++) {
 				indicators.append('<li class="indicator" data-slide-to=' + i + '></li>');
 			}
-			indicators.appendTo(me.element);
-			me.indicator = me.element.find('.indicator');
+			indicators.appendTo(this.element);
+			this.indicator = this.element.find('.indicator');
 
 			//默认激活第一个dots
-			me._onDots(0);
+			this._onDots(0);
+			return this;
 		},
 		/* 点击dots轮播函数 */
 		_onDots: function(index) {
-			var me = this;
-			me.indicator.eq(index).addClass('active').siblings().removeClass('active');
+			return this.indicator.eq(index).addClass('active').siblings().removeClass('active');
 		},
 		/* 下一页轮播函数 */
 		_next: function() {
-			var me = this;
-			$active = me.item.eq(me.index);
-			me.index = me.index === me.len - 1 ? 0 : me.index + 1;
-			$next = me.item.eq(me.index);
-
-			me._scrollPage($next, 'left');
+			return this._scrollPage('left');
 		},
 		/* 上一页轮播函数 */
 		_prev: function() {
-			var me = this;
-			$active = me.item.eq(me.index);
-			me.index = me.index === 0 ? me.len - 1 : me.index - 1;
-			$prev = me.item.eq(me.index);
-
-			me._scrollPage($prev, 'right');
+			return this._scrollPage('right');
+		},
+		/* 获取元素索引值 */
+		_getItemIndex: function (item) {
+			this.item = item.parent().children('.item');
+			return this.item.index(item)
+		},
+		/* 判断轮播方向，返回下一个元素 */
+		_getItemForDirection: function(direction, active) {
+			var activeIndex = this._getItemIndex(active),
+		    	delta 		= direction == 'left' ? 1 : -1,
+		    	itemIndex 	= (activeIndex + delta) % this.len;
+		    	
+		    return this.item.eq(itemIndex);
 		},
 		/* 元素轮播事件 */
-		_scrollPage: function(page, pageClass) {
-			var me = this;
-			var sign = pageClass === 'left' ? '-' : '+';
-			page.addClass(pageClass).animate({'left': 0}, me.settings.duration, me.settings.easing, function(){
+		_scrollPage: function(type, next) {
+			var me 		  = this,
+				$active   = me.element.find('.item.active'),
+				$next 	  = next || me._getItemForDirection(type, $active),
+				direction = type,
+				sign 	  = type === 'left' ? '-' : '+',
+				index 	  = me._getItemIndex($next);
+
+			//如果dots为true，调用_onDots方法
+			me.settings.dots && me._onDots(index);
+			
+			$next.addClass(direction).animate({'left': 0}, me.settings.duration, me.settings.easing, function(){
 				me.sliding = true; //解锁
-				$(this).removeClass(pageClass).removeAttr('style').addClass('active');
-				(me.settings.callback && $.type(me.settings.callback) === 'function') && me.settings.callback.apply(me, [me.index]);
+				$(this).removeClass(direction).removeAttr('style').addClass('active');
+				(me.settings.callback && $.type(me.settings.callback) === 'function') && me.settings.callback.apply(me, [index]);
 			});
 			$active.animate({'left': sign + '100%'}, me.settings.duration, me.settings.easing, function(){
 				$(this).removeClass('active').removeAttr('style');
 			});
-
-			//如果dots为true，调用_onDots方法
-			me.settings.dots && me._onDots(me.index);
+			return this;	
 		},
 		/* 元素主体事件函数 */
 		_initEvent: function() {
@@ -179,7 +187,7 @@
 				if(me.item.is(":animated")) return false;
 				if (me.sliding) {
 					me.sliding = false; //上锁
-					resetTimer();      //清楚计时器标识
+					resetTimer();      //清除计时器标识
 					me._prev();
 				}
 			}
@@ -189,45 +197,27 @@
 				if(me.item.is(":animated")) return false;
 				if (me.sliding) {
 					me.sliding = false; //上锁
-					resetTimer();      //清楚计时器标识
+					resetTimer();      //清除计时器标识
 					me._next();
 				}
 			}
 
-			/* left存在时，注册向前轮播点击事件 */
-			if (me.settings.left !== '') me.left.on('click', prev);
+			/* dots点击轮播事件 */
+			function dots(){
+				var slideTo 	  = $(this).data('slide-to'), //获取点击dots索引值
+					activeSlideTo = me.element.find('.indicator.active').index(), //获取当前dots索引值
+					direction 	  = slideTo > activeSlideTo ? 'left' : 'right', //判断轮播方向
+					next          = me.item.eq(slideTo);
 
-			/* right存在时，注册向后轮播点击事件 */
-			if (me.settings.right !== '') me.right.on('click', next);
-
-			/* 如果autoplay为true，则启用自动轮播事件 */
-			if (me.settings.autoplay) {
-				me.element.on({
-					'mouseenter': resetTimer,
-					'mouseleave': restartTimer
-				}).trigger('mouseleave');
+				(slideTo !== activeSlideTo) && me._scrollPage(direction, next);
 			}
 
-			/* 如果dots为true，则启用dots点击轮播事件 */
-			if (me.settings.dots) { 
-				me.indicator.on('click', function(){
-					var slideTo = $(this).data('slide-to');
-					var pageClass = me.index < slideTo ? 'left' : 'right'; //点击dots时，判断轮播方向
 
-					if (me.index == slideTo) return false; 
-
-					$active = me.item.eq(me.index);
-					$next = me.item.eq(slideTo);
-					me.index = slideTo;
-
-					me._scrollPage($next, pageClass);
-				});
-				
-			}
-
-			/* 如果keys为true，则启用keys点击轮播事件 （左右方向键） */
-			if (me.settings.keys) {
+			/* keys点击轮播事件 */
+			function keydownFn() {
 				$(document).keydown(function(event) {
+					if (/input|textarea/i.test(event.target.tagName)) return;
+
 					switch(event.which) {
 						case 37:
 							prev(); 
@@ -245,8 +235,8 @@
 				});
 			}
 
-			/* 如果swipe为true，则启用swipe滑动轮播事件 （左右方向） */
-			if (me.element.data("icarousel-swipe") || me.settings.swipe) {
+			/* swipe滑动轮播事件 */
+			function swipeFn() {
 				var startX, moveX, endX; //触摸起始位置、移动距离、结束位置
 				me.element.on({
 					'touchstart': function(event) {
@@ -269,8 +259,8 @@
 				});
 			}
 
-			/* 如果wheel为true，则启用wheel鼠标滚轮轮播事件 （上下方向） */
-			if (me.element.data("icarousel-wheel") || me.settings.wheel) {
+			/* wheel鼠标滚轮轮播事件 */
+			function wheelFn() {
 				me.element.on('mousewheel DOMMouseScroll', function(event){
 					event.preventDefault();
 					var delta = event.originalEvent.wheelDelta || -event.originalEvent.detail;
@@ -282,6 +272,28 @@
 				});
 			}
 
+			/* left存在时，注册向前轮播点击事件 */
+			(me.settings.left !== '') && me.left.on('click', prev);
+
+			/* right存在时，注册向后轮播点击事件 */
+			(me.settings.right !== '') && me.right.on('click', next);
+
+			/* 如果autoplay为true，则启用自动轮播事件 */
+			me.settings.autoplay && me.element.on({'mouseenter': resetTimer, 'mouseleave': restartTimer}).trigger('mouseleave');
+
+			/* 如果dots为true，则启用dots点击轮播事件 */
+			me.settings.dots && me.indicator.on('click', dots);
+				
+			/* 如果keys为true，则启用keys点击轮播事件 （左右方向键） */
+			me.settings.keys && keydownFn();
+
+			/* 如果swipe为true，则启用swipe滑动轮播事件 （左右方向） */
+			(me.element.data("icarousel-swipe") || me.settings.swipe) && swipeFn();
+
+			/* 如果wheel为true，则启用wheel鼠标滚轮轮播事件 （上下方向） */
+			(me.element.data("icarousel-wheel") || me.settings.wheel) && wheelFn()
+
+			return this;
 		} 
 	};
 
@@ -315,7 +327,7 @@
 		callback: ''       //动画执行完毕后的回调函数，接受第一个参数为当前元素索引值
 	};
 
-})(jQuery);
+}(jQuery);
 
 $(function(){
 	$("[data-icarousel]").iCarousel();
