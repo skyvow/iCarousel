@@ -96,6 +96,8 @@
 
 			//调用主体事件函数
 			me._initEvent();
+
+			return this;
 		},
 		/* 获取元素长度 */
 		itemLength: function() {
@@ -208,7 +210,8 @@
 					activeSlideTo = me.element.find('.indicator.active').index(), //获取当前dots索引值
 					direction 	  = slideTo > activeSlideTo ? 'left' : 'right', //判断轮播方向
 					next          = me.item.eq(slideTo);
-
+					
+				if(me.item.is(":animated")) return false;	
 				(slideTo !== activeSlideTo) && me._scrollPage(direction, next);
 			}
 
