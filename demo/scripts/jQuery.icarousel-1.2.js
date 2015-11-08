@@ -88,6 +88,9 @@
 			//如果启用dots，则执行_initPaging函数
 			me.settings.dots && me._initPaging();
 
+			//如果启用progressBar，则执行_progressBar函数
+			me.settings.progressBar && me._progressBar() && me._onProgressBar();
+
 			//如果启用插件，默认显示第一个元素
 			me.item.eq(0).addClass('active').siblings().removeClass('active');
 
@@ -120,6 +123,19 @@
 		/* 点击dots轮播函数 */
 		_onDots: function(index) {
 			return this.indicator.eq(index).addClass('active').siblings().removeClass('active');
+		},
+		/* 进度条 */
+		_progressBar: function() {
+			var progress = $('<div id="progressBar"><div id="bar"></div></div>');
+			progress.appendTo(this.element);
+			this.bar = this.element.find('#bar');
+			return this;
+		},
+		_onProgressBar: function() {
+			this.bar.stop(true, true).animate({'width': '100%'}, this.settings.speed, function(){
+				$(this).css('width', 0);
+			});
+			return this;
 		},
 		/* 下一页轮播函数 */
 		_next: function() {
@@ -181,6 +197,7 @@
 				resetTimer();
 				me.interval = setInterval(function(){ 
 					me._next();
+					me.settings.progressBar && me._onProgressBar();
 				}, me.element.data("icarousel-speed") || me.settings.speed);
 			}
 
@@ -191,6 +208,7 @@
 					me.sliding = false; //上锁
 					resetTimer();      //清除计时器标识
 					me._prev();
+					me.settings.progressBar && me._onProgressBar();
 				}
 			}
 
@@ -201,6 +219,7 @@
 					me.sliding = false; //上锁
 					resetTimer();      //清除计时器标识
 					me._next();
+					me.settings.progressBar && me._onProgressBar();
 				}
 			}
 
@@ -213,6 +232,7 @@
 					
 				if(me.item.is(":animated")) return false;	
 				(slideTo !== activeSlideTo) && me._scrollPage(direction, next);
+				me.settings.progressBar && me._onProgressBar();
 			}
 
 
@@ -243,7 +263,6 @@
 				var startX, moveX, endX; //触摸起始位置、移动距离、结束位置
 				me.element.on({
 					'touchstart': function(event) {
-						resetTimer(); 
 						startX = event.originalEvent.changedTouches[0].clientX;
 					},
 					'touchmove': function(event) {
@@ -253,11 +272,15 @@
 						endX = event.originalEvent.changedTouches[0].clientX;
 						moveX = startX - endX;
 
+						Math.abs(moveX) > 80 && resetTimer();
+
 						(moveX < -80) && prev();
 						(moveX > 80) && next();
 
-						/* 如果autoplay为true，则启用自动轮播事件 */
-						me.settings.autoplay && restartTimer();
+						if (Math.abs(moveX)>80) {
+							/* 如果autoplay为true，则启用自动轮播事件 */
+							me.settings.autoplay && restartTimer();
+						}					
 					}
 				});
 			}
@@ -282,7 +305,7 @@
 			(me.settings.right !== '') && me.right.on('click', next);
 
 			/* 如果autoplay为true，则启用自动轮播事件 */
-			me.settings.autoplay && me.element.on({'mouseenter': resetTimer, 'mouseleave': restartTimer}).trigger('mouseleave');
+			me.settings.autoplay && me.element.on({/*'mouseenter': resetTimer,*/ 'mouseleave': restartTimer}).trigger('mouseleave');
 
 			/* 如果dots为true，则启用dots点击轮播事件 */
 			me.settings.dots && me.indicator.on('click', dots);
@@ -325,6 +348,7 @@
 		keys: false,       //是否启用键盘
 		swipe: false,      //是否启用手势
 		wheel: false,      //是否启用鼠标滚轮
+		progressBar: false,//是否启用进度条
 		easing: 'swing',   //动画曲线，可选用jquery.easing.min.js类库
 		duration: 600,     //动画延迟
 		callback: ''       //动画执行完毕后的回调函数，接受第一个参数为当前元素索引值
