@@ -88,7 +88,7 @@
 			//如果启用dots，则执行_initPaging函数
 			me.settings.dots && me._initPaging();
 
-			//如果启用progressBar，则执行_progressBar函数
+			//如果启用progressBar，初始化进度条
 			me.settings.progressBar && me._progressBar() && me._onProgressBar();
 
 			//如果启用插件，默认显示第一个元素
@@ -124,13 +124,14 @@
 		_onDots: function(index) {
 			return this.indicator.eq(index).addClass('active').siblings().removeClass('active');
 		},
-		/* 进度条 */
+		/* 初始化进度条 */
 		_progressBar: function() {
 			var progress = $('<div id="progressBar"><div id="bar"></div></div>');
 			progress.appendTo(this.element);
 			this.bar = this.element.find('#bar');
 			return this;
 		},
+		/* 进度条动画 */
 		_onProgressBar: function() {
 			this.bar.stop(true, true).animate({'width': '100%'}, this.settings.speed, function(){
 				$(this).css('width', 0);
