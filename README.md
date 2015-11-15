@@ -1,5 +1,5 @@
 ## iCarousel
-* [http://skyvow.github.io/demo/](http://skyvow.github.io/demo/)
+* [http://skyvow.github.io/iCarousel/demo/](http://skyvow.github.io/iCarousel/demo/)
 
 
 ## HTML
