@@ -1,4 +1,5 @@
 ## iCarousel
+* 轮播方向：水平方向、垂直方向
 * [http://skyvow.github.io/demo/](http://skyvow.github.io/demo/)
 
 
@@ -38,6 +39,7 @@
 
 ```js
 $('.jq-carousel').iCarousel({
+	direction: 0,	   //轮播方向,0表示水平方向,1表示垂直方向
 	speed: 3000,       //自动轮播速度
 	autoplay: true,    //是否启用自动轮播
 	left: '',          //左按钮 可设置为'.jq-carousel .left'

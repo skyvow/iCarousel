@@ -12,7 +12,73 @@
 
 
   <style>
+  .carousel-inner > .Next, 
+  .carousel-inner > .Prev {
+    position: absolute;
+    top: 0;
+    width: 100%;
+  }
+  .carousel-inner > .active, 
+  .carousel-inner > .Next, 
+  .carousel-inner > .Prev {
+    display: block;
+  }
+  @media not all, (-webkit-transform-3d){
+    .carousel-inner > .item.Next,
+    .carousel-inner > .item.active.bottom,
+    .carousel-inner > .item.active.top {
+        left: 0;
+        -webkit-transform: translate3d(0, -100%, 0);
+        transform: translate3d(0, -100%, 0);
+    }
+    .carousel-inner > .item.Next.bottom, 
+    .carousel-inner > .item.Prev.top, 
+    .carousel-inner > .item.active {
+      left: 0;
+      -webkit-transform: translate3d(0, 0, 0);
+      transform: translate3d(0, 0, 0);
+    }
+    .carousel-inner > .item.Prev, 
+    .carousel-inner > .item.active.bottom {
+      left: 0;
+      -webkit-transform: translate3d(0, 100%, 0);
+      transform: translate3d(0, 100%, 0);
+    }
+  }
 
+  .vertical .carousel-indicators {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    bottom: auto;
+    left: auto;
+    z-index: 15;
+    width: 12px;
+    padding-left: 0;
+    margin-top: -10%;
+    text-align: center;
+    list-style: none;
+  }
+  .vertical .carousel-indicators li {
+    display: block;
+    margin: 3px auto;
+  }
+  .vertical .carousel-control {
+    width: 100%;
+    height: auto;
+  }
+  .vertical .carousel-control.left, 
+  .vertical .carousel-control.right {
+    background: none;
+  }
+  .vertical .carousel-control.left {
+    bottom: auto;
+    top: 10px;
+  }
+  .vertical .carousel-control.right {
+    top: auto;
+    bottom: 10px;
+  }
   </style>
 
 </head>
@@ -33,6 +99,9 @@
   </div>
   <a class="left carousel-control"><span class="glyphicon glyphicon-chevron-left"></span></a>
   <a class="right carousel-control"><span class="glyphicon glyphicon-chevron-right"></span></a>
+
+  <!-- <a class="left carousel-control"><span class="glyphicon glyphicon-chevron-up"></span></a>
+  <a class="right carousel-control"><span class="glyphicon glyphicon-chevron-down"></span></a> -->
 </div>
 
 <script src="scripts/jQuery.icarousel-1.2.js"></script>
@@ -46,8 +115,9 @@ function callback (index, element) {
 }
 
 $('.carousel-inner').iCarousel({
+  direction: 0,
   speed: 3000,
-  autoplay: true,
+  autoplay: false,
   left: '.carousel-inner .left',
   right: '.carousel-inner .right',
   dots: true,

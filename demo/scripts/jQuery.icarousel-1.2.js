@@ -13,6 +13,7 @@
 
 /**
  * $('.jq-carousel').iCarousel({
+ * 		direction: 0,
  *		speed: 3000,
  *		autoplay: true,
  *		dots: true,
@@ -94,6 +95,26 @@
 			if (me.settings.left !== '') me.left = $(me.settings.left); //若left不为空，则缓存$(left)
 			if (me.settings.right !== '') me.right = $(me.settings.right); //若right不为空，则缓存$(right)
 
+			if (me.settings.direction == 0) {
+				me.direction = {
+					next: 'next',
+					prev: 'prev',
+					left: 'left',
+					right: 'right'
+				}
+				me.element.addClass('horizontal');
+			}
+
+			if (me.settings.direction == 1) {
+				me.direction = {
+					next: 'Next',
+					prev: 'Prev',
+					left: 'bottom',
+					right: 'top'
+				}
+				me.element.addClass('vertical');
+			}
+
 			//如果启用dots，则执行_initPaging函数
 			me.settings.dots && me._initPaging();
 
@@ -131,11 +152,11 @@
 		},
 		/* 下一页轮播函数 */
 		_next: function() {
-			return this._scrollPage('next')
+			return this._scrollPage(this.direction.next)
 		},
 		/* 上一页轮播函数 */
 		_prev: function() {
-			return this._scrollPage('prev')
+			return this._scrollPage(this.direction.prev)
 		},
 		/* 获取元素索引值 */
 		_getItemIndex: function (item) {
@@ -145,7 +166,7 @@
 		/* 判断轮播方向，返回下一个元素 */
 		_getItemForDirection: function(direction, active) {
 			var activeIndex = this._getItemIndex(active),
-		    	delta 		= direction == 'prev' ? -1 : 1,
+		    	delta 		= direction == this.direction.prev ? -1 : 1,
 		    	itemIndex 	= (activeIndex + delta) % this.len;
 		    return this.item.eq(itemIndex);
 		},
@@ -154,7 +175,7 @@
 			var me 		  = this;
 			var $active   = me.element.find('.item.active');
 			var $next 	  = next || me._getItemForDirection(type, $active);
-			var direction = type == 'next' ? 'left' : 'right';
+			var direction = type == me.direction.next ? me.direction.left : me.direction.right;
 
 			var relatedTarget = $next[0];
 			var slidEvent = $.Event('slid.bs.carousel', { relatedTarget: relatedTarget, direction: direction });
@@ -231,7 +252,7 @@
 				me.indicator.on('click', function(){
 					var slideTo 	  = $(this).data('slide-to'), //获取点击dots索引值
 						activeSlideTo = me.element.find('.indicator.active').index(), //获取当前dots索引值
-						direction 	  = slideTo > activeSlideTo ? 'next' : 'prev', //判断轮播方向
+						direction 	  = slideTo > activeSlideTo ? me.direction.next : me.direction.prev, //判断轮播方向
 						next          = me.item.eq(slideTo);
 					
 					if(slideTo==activeSlideTo) return false;
@@ -248,12 +269,18 @@
 			function keydownFn() {
 				$(document).keydown(function(event) {
 					if (/input|textarea/i.test(event.target.tagName)) return;
-
+					console.log(event.which)
 					switch(event.which) {
 						case 37:
 							prev(); 
 							break;
 						case 39:
+							next(); 
+							break;
+						case 38:
+							prev(); 
+							break;
+						case 40:
 							next(); 
 							break;
 						case 27:
@@ -268,22 +295,32 @@
 
 			/* swipe滑动轮播事件 */
 			function swipeFn() {
-				var startX, moveX, endX; //触摸起始位置、移动距离、结束位置
+				var startX, startY, moveX, moveY, endX, endY; //触摸起始位置、移动距离、结束位置
 				me.element.on({
 					'touchstart': function(event) {
 						resetTimer(); 
 						startX = event.originalEvent.changedTouches[0].clientX;
+						startY = event.originalEvent.changedTouches[0].clientY;
 					},
 					'touchmove': function(event) {
 						event.preventDefault();
 					},
 					'touchend': function(event) {
 						endX = event.originalEvent.changedTouches[0].clientX;
+						endY = event.originalEvent.changedTouches[0].clientY;
 						moveX = startX - endX;
+						moveY = startY - endY;
 
-						(moveX < -80) && prev();
-						(moveX > 80) && next();
+						if (me.settings.direction == 0) {
+							(moveX < -80) && prev();
+							(moveX > 80) && next();
+						}
 
+						if (me.settings.direction == 1) {
+							(moveY < -80) && next();
+							(moveY > 80) && prev();
+						}
+						
 						/* 如果autoplay为true，则启用自动轮播事件 */
 						me.settings.autoplay && restartTimer();
 					}
@@ -345,6 +382,7 @@
 
 	/* 设置可选参数 */
 	$.fn.iCarousel.defaults = {
+		direction: 0,	   //轮播方向,0表示水平方向,1表示垂直方向
 		speed: 3000,       //自动轮播速度
 		autoplay: true,    //是否启用自动轮播
 		left: '',          //左按钮 可设置为'.jq-carousel .left'
