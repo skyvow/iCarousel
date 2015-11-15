@@ -12,6 +12,10 @@
 
 
   <style>
+  /* 普通浏览器使用top属性轮播 */
+  .carousel-inner > .item {
+    transition: top 0.6s ease-in-out 0s, left 0.6s ease-in-out 0s;
+  }
   .carousel-inner > .Next, 
   .carousel-inner > .Prev {
     position: absolute;
@@ -23,24 +27,48 @@
   .carousel-inner > .Prev {
     display: block;
   }
+  .carousel-inner > .item.Next,
+  .carousel-inner > .item.active.bottom,
+  .carousel-inner > .item.active.top {
+    top: 100%;
+  }
+  .carousel-inner > .item.Next.bottom, 
+  .carousel-inner > .item.Prev.top, 
+  .carousel-inner > .item.active {
+    top: 0;
+  }
+  .carousel-inner > .item.Prev, 
+  .carousel-inner > .item.active.bottom {
+    top: -100%;
+  }
+  /* webkit内核使用3d属性轮播 */
   @media not all, (-webkit-transform-3d){
+    .carousel-inner > .item {
+      -webkit-transition: -webkit-transform .6s ease-in-out;
+      -o-transition: -o-transform .6s ease-in-out;
+      transition: transform .6s ease-in-out;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      -webkit-perspective: 1000px;
+      perspective: 1000px;
+    }
     .carousel-inner > .item.Next,
     .carousel-inner > .item.active.bottom,
     .carousel-inner > .item.active.top {
-        left: 0;
+        top: 0;
         -webkit-transform: translate3d(0, -100%, 0);
         transform: translate3d(0, -100%, 0);
     }
     .carousel-inner > .item.Next.bottom, 
     .carousel-inner > .item.Prev.top, 
     .carousel-inner > .item.active {
-      left: 0;
+      top: 0;
       -webkit-transform: translate3d(0, 0, 0);
       transform: translate3d(0, 0, 0);
     }
     .carousel-inner > .item.Prev, 
     .carousel-inner > .item.active.bottom {
-      left: 0;
+      top: 0;
       -webkit-transform: translate3d(0, 100%, 0);
       transform: translate3d(0, 100%, 0);
     }
@@ -84,7 +112,8 @@
 </head>
 <body>
 
-<div class="carousel-inner">
+<h5>水平方向轮播</h5>
+<div id="demo1" class="carousel-inner">
   <div class="item">
     <img src="images/1.jpg" alt="">
   </div>
@@ -99,9 +128,26 @@
   </div>
   <a class="left carousel-control"><span class="glyphicon glyphicon-chevron-left"></span></a>
   <a class="right carousel-control"><span class="glyphicon glyphicon-chevron-right"></span></a>
+</div>
 
-  <!-- <a class="left carousel-control"><span class="glyphicon glyphicon-chevron-up"></span></a>
-  <a class="right carousel-control"><span class="glyphicon glyphicon-chevron-down"></span></a> -->
+<hr>
+
+<h5>垂直方向轮播</h5>
+<div id="demo2" class="carousel-inner">
+  <div class="item">
+    <img src="images/1.jpg" alt="">
+  </div>
+  <div class="item">
+    <img src="images/2.jpg" alt="">
+  </div>
+  <div class="item">
+    <img src="images/3.jpg" alt="">
+  </div>
+  <div class="item">
+    <img src="images/4.jpg" alt="">
+  </div>
+  <a class="left carousel-control"><span class="glyphicon glyphicon-chevron-up"></span></a>
+  <a class="right carousel-control"><span class="glyphicon glyphicon-chevron-down"></span></a>
 </div>
 
 <script src="scripts/jQuery.icarousel-1.2.js"></script>
@@ -114,7 +160,7 @@ function callback (index, element) {
   console.log(element);
 }
 
-$('.carousel-inner').iCarousel({
+$('#demo1').iCarousel({
   direction: 0,
   speed: 3000,
   autoplay: false,
@@ -127,6 +173,18 @@ $('.carousel-inner').iCarousel({
   callback: callback
 });
 
+$('#demo2').iCarousel({
+  direction: 1,
+  speed: 3000,
+  autoplay: false,
+  left: '.carousel-inner .left',
+  right: '.carousel-inner .right',
+  dots: true,
+  keys: true,
+  swipe: true,
+  wheel: true,
+  callback: callback
+});
 
 </script>
 </body>

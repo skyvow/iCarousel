@@ -67,6 +67,7 @@
       bindType: $.support.transition.end,
       delegateType: $.support.transition.end,
       handle: function (e) {
+      	console.log(e.handleObj)
         if ($(e.target).is(this)) return e.handleObj.handler.apply(this, arguments)
       }
     }
