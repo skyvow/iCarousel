@@ -1,6 +1,6 @@
 ## iCarousel
 * 轮播方向：水平方向、垂直方向
-* [http://skyvow.github.io/demo/](http://skyvow.github.io/demo/)
+* [http://skyvow.github.io/iCarousel/demo/](http://skyvow.github.io/iCarousel/demo/)
 
 
 ## HTML
