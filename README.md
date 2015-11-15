@@ -48,8 +48,6 @@ $('.jq-carousel').iCarousel({
 	keys: false,       //是否启用键盘
 	swipe: false,      //是否启用手势
 	wheel: false,      //是否启用鼠标滚轮
-	easing: 'swing',   //动画曲线，可选用jquery.easing.min.js类库
-	duration: 600,     //动画延迟
 	callback: ''       //动画执行完毕后的回调函数，接受第一个参数为当前元素索引值
 });
 ```
