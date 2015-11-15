@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Document</title>
+
+  <link href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.css" rel="stylesheet">
+  <link href="./styles/custom.css" rel="stylesheet">
+  <script src="http://cdn.bootcss.com/jquery/1.9.1/jquery.js"></script>
+
+
+  <style>
+  /* 普通浏览器使用top属性轮播 */
+  .carousel-inner > .item {
+    transition: top 0.6s ease-in-out 0s, left 0.6s ease-in-out 0s;
+  }
+  .carousel-inner > .Next, 
+  .carousel-inner > .Prev {
+    position: absolute;
+    top: 0;
+    width: 100%;
+  }
+  .carousel-inner > .active, 
+  .carousel-inner > .Next, 
+  .carousel-inner > .Prev {
+    display: block;
+  }
+  .carousel-inner > .item.Next,
+  .carousel-inner > .item.active.bottom,
+  .carousel-inner > .item.active.top {
+    top: 100%;
+  }
+  .carousel-inner > .item.Next.bottom, 
+  .carousel-inner > .item.Prev.top, 
+  .carousel-inner > .item.active {
+    top: 0;
+  }
+  .carousel-inner > .item.Prev, 
+  .carousel-inner > .item.active.bottom {
+    top: -100%;
+  }
+  /* webkit内核使用3d属性轮播 */
+  @media not all, (-webkit-transform-3d){
+    .carousel-inner > .item {
+      -webkit-transition: -webkit-transform .6s ease-in-out;
+      -o-transition: -o-transform .6s ease-in-out;
+      transition: transform .6s ease-in-out;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      -webkit-perspective: 1000px;
+      perspective: 1000px;
+    }
+    .carousel-inner > .item.Next,
+    .carousel-inner > .item.active.bottom,
+    .carousel-inner > .item.active.top {
+        top: 0;
+        -webkit-transform: translate3d(0, -100%, 0);
+        transform: translate3d(0, -100%, 0);
+    }
+    .carousel-inner > .item.Next.bottom, 
+    .carousel-inner > .item.Prev.top, 
+    .carousel-inner > .item.active {
+      top: 0;
+      -webkit-transform: translate3d(0, 0, 0);
+      transform: translate3d(0, 0, 0);
+    }
+    .carousel-inner > .item.Prev, 
+    .carousel-inner > .item.active.bottom {
+      top: 0;
+      -webkit-transform: translate3d(0, 100%, 0);
+      transform: translate3d(0, 100%, 0);
+    }
+  }
+
+  .vertical .carousel-indicators {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    bottom: auto;
+    left: auto;
+    z-index: 15;
+    width: 12px;
+    padding-left: 0;
+    margin-top: -10%;
+    text-align: center;
+    list-style: none;
+  }
+  .vertical .carousel-indicators li {
+    display: block;
+    margin: 3px auto;
+  }
+  .vertical .carousel-control {
+    width: 100%;
+    height: auto;
+  }
+  .vertical .carousel-control.left, 
+  .vertical .carousel-control.right {
+    background: none;
+  }
+  .vertical .carousel-control.left {
+    bottom: auto;
+    top: 10px;
+  }
+  .vertical .carousel-control.right {
+    top: auto;
+    bottom: 10px;
+  }
+  </style>
+
+</head>
+<body>
+<section class="page-header">
+  <h1 class="project-name">jQuery iCarousel DEMO</h1>
+  <h2 class="project-tagline"></h2>
+</section>
+
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12">
+      <h4>水平方向轮播</h4>
+      <div id="demo1" class="carousel-inner">
+        <div class="item">
+          <img src="images/1.jpg" alt="">
+        </div>
+        <div class="item">
+          <img src="images/2.jpg" alt="">
+        </div>
+        <div class="item">
+          <img src="images/3.jpg" alt="">
+        </div>
+        <div class="item">
+          <img src="images/4.jpg" alt="">
+        </div>
+        <a class="left carousel-control"><span class="glyphicon glyphicon-chevron-left"></span></a>
+        <a class="right carousel-control"><span class="glyphicon glyphicon-chevron-right"></span></a>
+      </div>
+    </div>
+    <div class="col-xs-12">
+      <h4>垂直方向轮播</h4>
+      <div id="demo2" class="carousel-inner">
+        <div class="item">
+          <img src="images/1.jpg" alt="">
+        </div>
+        <div class="item">
+          <img src="images/2.jpg" alt="">
+        </div>
+        <div class="item">
+          <img src="images/3.jpg" alt="">
+        </div>
+        <div class="item">
+          <img src="images/4.jpg" alt="">
+        </div>
+        <a class="left carousel-control"><span class="glyphicon glyphicon-chevron-up"></span></a>
+        <a class="right carousel-control"><span class="glyphicon glyphicon-chevron-down"></span></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<script src="scripts/jQuery.icarousel-1.2.js"></script>
+<script>
+
+function callback (index, element) {
+  console.log('当前元素索引值',index);
+  console.log(element);
+}
+
+$('#demo1').iCarousel({
+  direction: 0,
+  speed: 3000,
+  autoplay: false,
+  left: '.carousel-inner .left',
+  right: '.carousel-inner .right',
+  dots: true,
+  keys: true,
+  swipe: true,
+  wheel: true,
+  callback: callback
+});
+
+$('#demo2').iCarousel({
+  direction: 1,
+  speed: 3000,
+  autoplay: false,
+  left: '.carousel-inner .left',
+  right: '.carousel-inner .right',
+  dots: true,
+  keys: true,
+  swipe: true,
+  wheel: true,
+  callback: callback
+});
+
+</script>
+</body>
+</html>
